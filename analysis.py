@@ -157,8 +157,6 @@ print(f"Wrote {len(df)} rows to customers.csv and {len(city_df)} rows to city_co
 
 
 
-
-
 # if __name__ == "__main__":
 #     # TODO: run each step and print a short findings summary
 #     pass
