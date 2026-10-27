@@ -118,7 +118,41 @@ pd.set_option("display.max_columns", None)
 df = to_dataframe(result_x)
 print(df.shape)
 print(df.dtypes)
+ # 2. Confirm pandas agrees with the hand-written counts
+hand_cities = city_counts(customers)
+hand_domains = email_domain_counts(customers)
 
+pd_cities = df["city"].value_counts().to_dict()
+pd_domains = df["email_domain"].value_counts().to_dict()
+
+# groupby gives the same answer a second way
+gb_cities = df.groupby("city").size().to_dict()
+
+print("city_counts matches value_counts:", hand_cities == pd_cities)
+print("city_counts matches groupby:     ", hand_cities == gb_cities)
+print("email_domain_counts matches:     ", hand_domains == pd_domains)
+
+# assert stops the script if they ever disagree
+assert hand_cities == pd_cities == gb_cities
+assert hand_domains == pd_domains
+
+# 3. Export to CSV
+out_dir = Path("output")
+out_dir.mkdir(exist_ok=True)          # creates the folder if missing
+
+# customers.csv: one row per customer
+df.to_csv(out_dir / "customers.csv", index=False)
+
+# city_counts.csv: most common first, ties alphabetical (same as print_sorted)
+city_df = (
+    df.groupby("city")
+      .size()
+      .reset_index(name="count")
+      .sort_values(["count", "city"], ascending=[False, True])
+)
+city_df.to_csv(out_dir / "city_counts.csv", index=False)
+
+print(f"Wrote {len(df)} rows to customers.csv and {len(city_df)} rows to city_counts.csv")
 
 
 
