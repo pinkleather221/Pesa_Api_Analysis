@@ -4,7 +4,8 @@ Squad Python Specialization - Data Science, AI & Analytics
 """
 import json
 from pathlib import Path
-
+import os
+import matplotlib.pyplot as plt
 import pandas as pd
 import requests
 
@@ -25,21 +26,21 @@ customers = get_customers()
 # print(customers)
 
 
-# def explore(record: dict, indent: int = 0) -> None:
-#     """Print every key in a (possibly nested) record with its type, indented by depth."""
-#     pad = "     " * indent
-#     if isinstance(record, dict):
-#         for key, value in record.items():
-#             print(f"{pad}{key}:{type(value).__name__}") #class <str>
-#             explore(value, indent + 1)
-#     elif isinstance(record, list):
-#         for i, item in enumerate(record):
-#             if isinstance(item, (dict, list)):
-#                 print(f"{pad}{i}:{type(item).__name__}")
-#                 explore(item, indent + 1)
+def explore(record: dict, indent: int = 0) -> None:
+    """Print every key in a (possibly nested) record with its type, indented by depth."""
+    pad = "     " * indent
+    if isinstance(record, dict):
+        for key, value in record.items():
+            print(f"{pad}{key}:{type(value).__name__}") #class <str>
+            explore(value, indent + 1)
+    elif isinstance(record, list):
+        for i, item in enumerate(record):
+            if isinstance(item, (dict, list)):
+                print(f"{pad}{i}:{type(item).__name__}")
+                explore(item, indent + 1)
 
-# if customers:
-#     explore(customers[0])
+if customers:
+    explore(customers[0])
 
 def extract_attributes(customers: list[dict]) -> list[dict]:
     """Return one flat dict per customer with the attributes listed in the task."""
@@ -155,8 +156,44 @@ city_df.to_csv(out_dir / "city_counts.csv", index=False)
 print(f"Wrote {len(df)} rows to customers.csv and {len(city_df)} rows to city_counts.csv")
 
 
+def plot_distribution(counts: dict[str, int], path: str,
+                      title: str = "Distribution", xlabel: str = "Customers") -> None:
+    """Save a horizontal bar chart of counts, most common first."""
+    # same ordering as print_sorted: count desc, then name A-Z
+    items = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
+    labels = [name for name, _ in items]
+    values = [n for _, n in items]
+
+    fig, ax = plt.subplots(figsize=(8, max(3, 0.4 * len(labels))))
+    ax.barh(labels, values, color="steelblue")
+    ax.invert_yaxis()                      # largest bar at the top
+    ax.set_title(title)
+    ax.set_xlabel(xlabel)
+    ax.set_xticks(range(0, max(values) + 1))   # counts are whole numbers
+
+    for i, v in enumerate(values):         # label each bar with its count
+        ax.text(v + 0.05, i, str(v), va="center")
+
+    fig.tight_layout()
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=150)
+    plt.close(fig)                         # free memory, don't show twice
 
 
-# if __name__ == "__main__":
-#     # TODO: run each step and print a short findings summary
-#     pass
+# Chart 1: customers by city (required file)
+plot_distribution(
+    city_counts(customers),
+    "output/customer_distribution.png",
+    title="Customers by city",
+)
+
+# Chart 2: customers by email top-level domain
+df["email_tld"] = df["email_domain"].str.rsplit(".", n=1).str[-1]
+tld_counts = df["email_tld"].value_counts().to_dict()
+print(tld_counts)                          # check that it actually varies
+
+plot_distribution(
+    tld_counts,
+    "output/email_tld_distribution.png",
+    title="Customers by email top-level domain",
+)
