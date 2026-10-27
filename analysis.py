@@ -115,6 +115,10 @@ print(distinct_email)
 def to_dataframe(rows: list[dict]) -> pd.DataFrame:
     df = pd.DataFrame(rows)
     return(rows)
+
+
+
+
 #     raise NotImplementedError
 
 
