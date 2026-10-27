@@ -102,13 +102,13 @@ print(distict_count, "Distict customer Names")
 print(distinct_email, "distict emails")
 
 
-# def email_domain_counts(customers: list[dict]) -> dict[str, int]:
-#     """Count customers per email top-level domain (e.g. 'biz', 'tv')."""
-#     raise NotImplementedError
 
 
-# def to_dataframe(rows: list[dict]) -> pd.DataFrame:
+def to_dataframe(rows: list[dict]) -> pd.DataFrame:
+    df = pd.DataFrame(rows)
+    return(rows)
 #     raise NotImplementedError
+
 
 
 # def plot_distribution(counts: dict[str, int], path: Path) -> None:
