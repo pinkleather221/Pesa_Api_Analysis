@@ -102,7 +102,15 @@ print(distict_count, "Distict customer Names")
 print(distinct_email, "distict emails")
 
 
+def print_sorted(counts: dict[str, int], title: str) -> None:
+    """Print counts from most to least common, ties listed alphabetically."""
+    print(title)
+    for name, n in sorted(counts.items(), key=lambda item: (-item[1], item[0])):
+        print(f"  {name}: {n}")
 
+
+distinct_email = email_domain_counts(customers)
+print(distinct_email)
 
 def to_dataframe(rows: list[dict]) -> pd.DataFrame:
     df = pd.DataFrame(rows)
