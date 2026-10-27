@@ -22,61 +22,84 @@ def get_customers(url: str = API_URL) -> list[dict]:
         return []
 
 customers = get_customers()
-print(customers)
+# print(customers)
 
 
-def explore(record: dict, indent: int = 0) -> None:
-    """Print every key in a (possibly nested) record with its type, indented by depth."""
-    pad = "     " * indent
-    if isinstance(record, dict):
-        for key, value in record.items():
-            print(f"{pad}{key}:{type(value).__name__}") #class <str>
-            explore(value, indent + 1)
-    elif isinstance(record, list):
-        for i, item in enumerate(record):
-            if isinstance(item, (dict, list)):
-                print(f"{pad}{i}:{type(item).__name__}")
-                explore(item, indent + 1)
+# def explore(record: dict, indent: int = 0) -> None:
+#     """Print every key in a (possibly nested) record with its type, indented by depth."""
+#     pad = "     " * indent
+#     if isinstance(record, dict):
+#         for key, value in record.items():
+#             print(f"{pad}{key}:{type(value).__name__}") #class <str>
+#             explore(value, indent + 1)
+#     elif isinstance(record, list):
+#         for i, item in enumerate(record):
+#             if isinstance(item, (dict, list)):
+#                 print(f"{pad}{i}:{type(item).__name__}")
+#                 explore(item, indent + 1)
 
-if customers:
-    explore(customers[0])
+# if customers:
+#     explore(customers[0])
 
-def extract_attributes(customers: list[dict]) -> list[dict]:
-    """Return one flat dict per customer with the attributes listed in the task."""
-    rows = [
-        # creating an empty list , inisde it will have many dictionaries, each dictinary has individual attributes from the jason file(a nested dictinary)
-    ]
-    # customers is the whole jason file with (eg 500 customers), c stands for one out of the 500 customers.
+# def extract_attributes(customers: list[dict]) -> list[dict]:
+#     """Return one flat dict per customer with the attributes listed in the task."""
+#     rows = [
+#         # creating an empty list , inisde it will have many dictionaries, each dictinary has individual attributes from the jason file(a nested dictinary)
+#     ]
+#     # customers is the whole jason file with (eg 500 customers), c stands for one out of the 500 customers.
+#     for c in customers:
+#         rows.append({
+#             'id': c['id'],
+#             'name': c['name'],
+#             "username": c["username"],
+#             "email": c["email"],
+#             "email_domain": c["email"].split("@")[-1].lower(),
+#             "phone": c["phone"],
+#             "city": c["address"]["city"],
+#             "zipcode": c["address"]["zipcode"],
+#             "latitude": float(c["address"]["geo"]["lat"]),
+#             "longitude": float(c["address"]["geo"]["lng"]),
+#             "company": c["company"]["name"],
+#             "website": c["website"],
+#         })
+#     return rows
+
+
+# result_x = extract_attributes(customers)
+# print(result_x)
+
+
+def unique_cities(customers: list[dict]) -> set[str]:
+    """Return the set of distinct cities."""
+    return {c["address"]["city"] for c in customers}
+
+cities = unique_cities(customers)
+print(cities)
+
+
+
+def city_counts(customers: list[dict]) -> dict[str, int]:
+    """Count customers per city using a loop and/or a dict comprehension (no Counter, no pandas)."""
+    counts = {}
+
     for c in customers:
-        rows.append({
-            'id': c['id'],
-            'name': c['name'],
-            "username": c["username"],
-            "email": c["email"],
-            "email_domain": c["email"].split("@")[-1].lower(),
-            "phone": c["phone"],
-            "city": c["address"]["city"],
-            "zipcode": c["address"]["zipcode"],
-            "latitude": float(c["address"]["geo"]["lat"]),
-            "longitude": float(c["address"]["geo"]["lng"]),
-            "company": c["company"]["name"],
-            "website": c["website"],
-        })
-    return rows
+        city = c["address"]["city"]
+        counts[city] = counts.get(city, 0) + 1
+
+    return counts
 
 
-result_x = extract_attributes(customers)
-print(result_x)
-
-
-# def unique_cities(customers: list[dict]) -> set[str]:
-#     """Return the set of distinct cities."""
-#     raise NotImplementedError
-
-
-# def city_counts(customers: list[dict]) -> dict[str, int]:
-#     """Count customers per city using a loop and/or a dict comprehension (no Counter, no pandas)."""
-#     raise NotImplementedError
+def email_domain_counts(customers: list[dict]) -> dict[str, int]:
+    """Return {email domain: number of customers} using a dict comprehension."""
+    domains = [c["email"].split("@")[-1].lower() for c in customers]
+    return {d: domains.count(d) for d in set(domains)}
+      
+distict_count = city_counts(customers)
+distinct_email = email_domain_counts(customers)
+# print_sorted(city_counts(customers), "Customers by city")
+# print_sorted(email_domain_counts(customers), "Customers by email domain")
+print(distict_count, "Distict customer Names")
+print(distinct_email, "distict emails")
 
 
 # def email_domain_counts(customers: list[dict]) -> dict[str, int]:
