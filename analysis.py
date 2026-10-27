@@ -41,32 +41,32 @@ customers = get_customers()
 # if customers:
 #     explore(customers[0])
 
-# def extract_attributes(customers: list[dict]) -> list[dict]:
-#     """Return one flat dict per customer with the attributes listed in the task."""
-#     rows = [
-#         # creating an empty list , inisde it will have many dictionaries, each dictinary has individual attributes from the jason file(a nested dictinary)
-#     ]
-#     # customers is the whole jason file with (eg 500 customers), c stands for one out of the 500 customers.
-#     for c in customers:
-#         rows.append({
-#             'id': c['id'],
-#             'name': c['name'],
-#             "username": c["username"],
-#             "email": c["email"],
-#             "email_domain": c["email"].split("@")[-1].lower(),
-#             "phone": c["phone"],
-#             "city": c["address"]["city"],
-#             "zipcode": c["address"]["zipcode"],
-#             "latitude": float(c["address"]["geo"]["lat"]),
-#             "longitude": float(c["address"]["geo"]["lng"]),
-#             "company": c["company"]["name"],
-#             "website": c["website"],
-#         })
-#     return rows
+def extract_attributes(customers: list[dict]) -> list[dict]:
+    """Return one flat dict per customer with the attributes listed in the task."""
+    rows = [
+        # creating an empty list , inisde it will have many dictionaries, each dictinary has individual attributes from the jason file(a nested dictinary)
+    ]
+    # customers is the whole json file with (eg 500 customers), c stands for one out of the 500 customers.
+    for c in customers:
+        rows.append({
+            'id': c['id'],
+            'name': c['name'],
+            "username": c["username"],
+            "email": c["email"],
+            "email_domain": c["email"].split("@")[-1].lower(),
+            "phone": c["phone"],
+            "city": c["address"]["city"],
+            "zipcode": c["address"]["zipcode"],
+            "latitude": float(c["address"]["geo"]["lat"]),
+            "longitude": float(c["address"]["geo"]["lng"]),
+            "company": c["company"]["name"],
+            "website": c["website"],
+        })
+    return rows
 
 
-# result_x = extract_attributes(customers)
-# print(result_x)
+result_x = extract_attributes(customers)
+print(result_x)
 
 
 def unique_cities(customers: list[dict]) -> set[str]:
@@ -113,8 +113,11 @@ distinct_email = email_domain_counts(customers)
 print(distinct_email)
 
 def to_dataframe(rows: list[dict]) -> pd.DataFrame:
-    df = pd.DataFrame(rows)
-    return(rows)
+    return pd.DataFrame(rows)
+pd.set_option("display.max_columns", None)
+df = to_dataframe(result_x)
+print(df.shape)
+print(df.dtypes)
 
 
 
