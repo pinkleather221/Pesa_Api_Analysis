@@ -156,13 +156,7 @@ print(f"Wrote {len(df)} rows to customers.csv and {len(city_df)} rows to city_co
 
 
 
-#     raise NotImplementedError
 
-
-
-# def plot_distribution(counts: dict[str, int], path: Path) -> None:
-#     """Save a labelled chart of the distribution to path."""
-#     raise NotImplementedError
 
 
 # if __name__ == "__main__":
