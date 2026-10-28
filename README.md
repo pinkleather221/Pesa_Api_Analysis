@@ -1,127 +1,97 @@
 # Pesa Pulse — Customer API Analysis
 
-> **Context:** Pesa Pulse, a Nairobi-based fintech start-up, receives a customer directory from a new partner via a REST API. This project pulls that data, explores its nested structure, extracts the attributes that matter, counts and maps the customer distribution, and produces publication-ready CSV exports and charts for the marketing team.
+This project retrieves synthetic customer records from the public JSONPlaceholder API, explores their nested JSON structure, summarizes customers by city and email top-level domain (TLD), validates the summaries with pandas, and exports CSV files and charts.
 
----
+## Project structure
 
-## Table of Contents
-
-1. [Project Overview](#project-overview)
-2. [Learning Objectives](#learning-objectives)
-3. [Project Structure](#project-structure)
-4. [Setup & Installation](#setup--installation)
-5. [How to Run](#how-to-run)
-6. [Task Walkthrough](#task-walkthrough)
-   - [Task 1 – Retrieve Customer Data with Requests](#task-1--retrieve-customer-data-with-requests)
-   - [Task 2 – Explore Nested Dictionaries and Lists](#task-2--explore-nested-dictionaries-and-lists)
-   - [Task 3 – Extract Customer Attributes](#task-3--extract-customer-attributes)
-   - [Task 4 – Find Unique Cities with Sets](#task-4--find-unique-cities-with-sets)
-   - [Task 5 – Count Customers by City and Email Domain](#task-5--count-customers-by-city-and-email-domain)
-   - [Task 6 – Convert Data into a DataFrame](#task-6--convert-data-into-a-dataframe)
-   - [Task 7 – Export Results to CSV](#task-7--export-results-to-csv)
-   - [Task 8 – Visualise the Customer Distribution](#task-8--visualise-the-customer-distribution)
-7. [Data Structure Deep Dive](#data-structure-deep-dive)
-8. [Key Findings](#key-findings)
-9. [Output Files](#output-files)
-10. [Dependencies](#dependencies)
-
----
-
-## Project Overview
-
-- Calling a live REST API
-- Navigating deeply nested JSON
-- Aggregating data with pure Python structures (sets, dicts, comprehensions)
-- Cross-validating results with pandas
-- Exporting clean CSVs and generating charts for non-technical stakeholders
-
-The data source is the public mock API at **[`https://jsonplaceholder.typicode.com/users`](https://jsonplaceholder.typicode.com/users)**, which returns 10 synthetic customer records in JSON format.
-
----
-
-## Learning Objectives
-
-| # | Skill |
-|---|-------|
-| 1 | Retrieve JSON from an API with `requests` and handle failures gracefully |
-| 2 | Navigate nested dictionaries and lists confidently |
-| 3 | Use sets to find unique values and dictionaries to count them |
-| 4 | Write dict comprehensions for aggregation without pandas |
-| 5 | Move cleaned data into pandas, export it, and visualise a distribution |
-
----
-
-## Project Structure
-
-```
+```text
 Pesa_Api_Analysis/
-│
-├── analysis.py              # Main implementation — all 8 tasks
-├── starter.py               # Original scaffold with stub functions
-├── analysis.ipynb           # Jupyter notebook version
-│
-├── output/
-│   ├── customers.csv            # One row per customer (12 columns)
-│   ├── city_counts.csv          # City name + customer count, sorted desc
-│   ├── customer_distribution.png  # Bar chart: customers per city
-│   └── email_tld_distribution.png # Bar chart: customers per email domain
-│
-├── pyproject.toml           # Project metadata and dependencies (uv)
-├── uv.lock                  # Locked dependency tree
-├── .python-version          # Python version pin
-└── README.md                # This file
+├── analysis.py
+├── pyproject.toml
+├── requirements.txt
+├── uv.lock
+├── src/
+│   └── pesa_api_analysis/
+│       └── __init__.py
+└── output/
+    ├── customers.csv
+    ├── city_counts.csv
+    ├── customer_distribution.png
+    └── email_tld_distribution.png
 ```
 
----
+## Setup
 
-## Setup & Installation
-
-This project uses **[uv](https://docs.astral.sh/uv/)** as its package manager (configured in `pyproject.toml`).
-
-### Prerequisites
-
-- Python >= 3.14
-- `uv` installed ([installation guide](https://docs.astral.sh/uv/getting-started/installation/))
-
-### Steps
+The project requires Python 3.14 or newer. Install dependencies with either `uv` or `pip`:
 
 ```bash
-# 1. Clone or navigate to the project directory
-cd Pesa_Api_Analysis
-
-# 2. Create a virtual environment and install all dependencies
 uv sync
-
-# 3. (Optional) Install dependencies manually with pip
-pip install requests pandas matplotlib
 ```
 
-### Dependencies
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `requests` | >= 2.34.2 | HTTP API calls |
-| `pandas` | >= 3.1.0 | DataFrame creation, CSV export |
-| `matplotlib` | >= 3.11.2 | Chart generation |
-
----
-
-## How to Run
+Or:
 
 ```bash
-# Run the full analysis pipeline
-python analysis.py
+python -m pip install -r requirements.txt
+```
 
-# Or run via uv
+## Run
+
+Run the analysis from the project root so generated files are written to `output/`:
+
+```bash
 uv run python analysis.py
 ```
 
-The script will:
-1. Fetch customer data from the API
-2. Print the nested structure explorer output
-3. Print unique cities, city counts, and email domain counts
-4. Confirm pandas counts match hand-written counts
-5. Write CSV files and PNG charts to the `output/` folder
+Or, after installing dependencies:
 
----
+```bash
+python analysis.py
+```
 
+The script fetches the data, prints a nested-structure walkthrough and findings, checks the hand-written counts against pandas, then recreates both CSVs and PNG charts. If the API request fails or returns no records, it reports the issue and exits without attempting analysis.
+
+## Task walkthrough
+
+1. **Retrieve data:** `get_customers()` requests the JSONPlaceholder users endpoint with a 10-second timeout and reports request exceptions.
+2. **Explore nested data:** `explore()` recursively walks dictionaries and lists, printing each field's type and nesting level.
+3. **Extract attributes:** `extract_attributes()` flattens each record into a row. It converts latitude and longitude to floating-point numbers and stores the email's TLD in `email_domain`.
+4. **Summarize:** `unique_cities()` uses a set comprehension. `city_counts()` counts customers per city, while `email_domain_counts()` counts TLDs using a dictionary.
+5. **Validate:** pandas `value_counts()` and `groupby()` results are compared with the pure-Python counts using printed checks and assertions.
+6. **Export and chart:** the script writes the customer and city summaries to CSV and generates horizontal bar charts for city and TLD counts.
+
+## Data structure deep dive
+
+The API returns one dictionary per customer. Fields used by this project include top-level `id`, `name`, `username`, `email`, `phone`, and `website`, as well as nested fields:
+
+| Output attribute | Source path | Transformation |
+|---|---|---|
+| `customer_id` | `id` | Renamed for clarity |
+| `city` | `address.city` | None |
+| `zipcode` | `address.zipcode` | None |
+| `latitude` | `address.geo.lat` | Converted to `float` |
+| `longitude` | `address.geo.lng` | Converted to `float` |
+| `company` | `company.name` | None |
+| `email_domain` | `email` | Final portion after `.` (for example, `biz` in `name@example.biz`), lower-cased |
+
+These nested paths demonstrate how a flat row can be built from values several levels down in a JSON object.
+
+## Key findings
+
+For the 10 records returned by JSONPlaceholder:
+
+- There are 10 distinct cities, so each city has one customer.
+- The email TLD counts are `biz` (3), `ca` (1), `info` (1), `io` (1), `me` (1), `net` (1), `org` (1), and `tv` (1).
+- The city chart makes the lack of city-level variation easy to see. The email TLD chart is more informative for comparing categories in this sample because its counts are not all tied.
+
+The API supplies synthetic example data; these results should not be treated as representative customer or market statistics. Running the script refreshes the findings and output files from the current API response.
+
+## Output files
+
+- `output/customers.csv` — one flattened row per customer, including `customer_id` and `email_domain`.
+- `output/city_counts.csv` — city totals in descending count order, with ties alphabetized; the count column is `customer_count`.
+- `output/customer_distribution.png` — customer counts by city.
+- `output/email_tld_distribution.png` — customer counts by email TLD.
+
+## Dependencies
+
+The runtime dependencies are listed in both [`pyproject.toml`](./pyproject.toml) and [`requirements.txt`](./requirements.txt): `requests` for the HTTP request, `pandas` for tabular validation and CSV export, and `matplotlib` for charts.
